@@ -1,0 +1,160 @@
+﻿@page "/"
+@using RPonto.Data
+@using RPonto.Data.Repositories
+@inject IPontoContext repository;
+
+<h1>Hello, world!</h1>
+
+
+
+<ul class="steps">
+    <li class="steps-segment">
+        <a href="#" class="steps-marker"></a>
+    </li>
+    <li class="steps-segment">
+        <a href="#" class="steps-marker"></a>
+    </li>
+    <li class="steps-segment is-active">
+        <span class="steps-marker"></span>
+    </li>
+    <li class="steps-segment">
+        <span class="steps-marker"></span>
+    </li>
+    <li class="steps-segment">
+        <span class="steps-marker"></span>
+    </li>
+</ul>
+
+
+
+<div class="card">
+    <header class="card-header">
+        <p class="card-header-title">
+            Registro de ponto
+        </p>
+    </header>
+    <div class="card-content">
+        <div class="content">
+                    <div class="clock">
+    <span>@Hour</span> :
+    <span>@Minute</span> :
+    <span>@Second</span>
+</div>
+
+        
+    <ul class="steps">
+      <li class="steps-segment">
+        <span class="steps-marker"></span>
+      </li>
+      <li class="steps-segment is-active has-gaps">
+        <span class="steps-marker"></span>
+      </li>
+      <li class="steps-segment">
+        <span class="steps-marker"></span>
+      </li>
+    </ul>
+        </div>
+    </div>
+    <footer class="card-footer" style="justify-content:space-evenly;">
+        <a style="max-width:350px;color:forestgreen;" @onclick="BaterPontoE" class="card-footer-item">Entrada</a>
+        <a style="max-width:350px;color:darkred;" @onclick="BaterPontoS" class="card-footer-item">Saida</a>
+    </footer>
+</div>
+
+
+<div class="card">
+    <header class="card-header">
+        <p class="card-header-title">
+            Pontos Registrados
+        </p>
+
+        <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+                <i class="fas fa-angle-down" aria-hidden=""></i>
+            </span>
+        </button>
+    </header>
+    <div class="card-content">
+        <div class="content">
+           
+            <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Funcionario</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                 @if(PontosBatidos != null){
+                <tbody>
+                    @foreach (var item in PontosBatidos)
+                    {
+                        <tr>
+                            <td>@item.DataEHora.ToShortDateString()</td>
+                            <td>@item.DataEHora.ToShortTimeString()</td>
+                            <td>Jackeline</td>
+                                @if(item.Saida == true)
+                                {
+                                     <td style="color:darkred">Saida</td>
+                                }
+                                else
+                                {
+                                     <td style="color:forestgreen">Entrada</td>
+                                }
+                               
+                        </tr>
+                    }
+                </tbody>
+                 }
+            </table
+           
+        </div>
+
+    </div>
+</div>
+@code {
+    public Ponto Ponto;
+    public List<Ponto> PontosBatidos;
+    public string Hour;
+    public string Minute;
+    public string Second;
+  
+
+public async Task BaterPontoE()
+{
+    await repository.Init();
+    Ponto ponto = new Ponto();
+    ponto.DataEHora = DateTime.Now;
+    ponto.Saida = false;
+    await repository.Cadastrar(ponto);
+    PontosBatidos = await repository.ObterPorPeriodo(DateTime.Today, DateTime.Today.AddDays(1).AddTicks(-1));
+}
+
+public async Task BaterPontoS()
+{
+    await repository.Init();
+    Ponto ponto = new Ponto();
+    ponto.DataEHora = DateTime.Now;
+    ponto.Saida = true;
+    await repository.Cadastrar(ponto);
+    PontosBatidos = await repository.ObterPorPeriodo(DateTime.Today, DateTime.Today.AddDays(1).AddTicks(-1));
+}
+    protected override void OnInitialized()
+    {
+        UpdateClock();
+        var timer = new System.Threading.Timer(state =>
+        {
+            InvokeAsync(UpdateClock);
+        }, null, 0, 1000);
+    }
+
+    private void UpdateClock()
+    {
+        var now = DateTime.Now;
+        Hour = now.Hour.ToString("00");
+        Minute = now.Minute.ToString("00");
+        Second = now.Second.ToString("00");
+        StateHasChanged();
+    }
+}

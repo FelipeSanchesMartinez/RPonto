@@ -1,0 +1,9 @@
+﻿html, body {
+    padding: 0px;
+    margin: 0px;
+}
+.clock {
+    font-size: 40px;
+    font-weight: bold;
+    text-align: center;
+}
